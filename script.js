@@ -117,3 +117,29 @@
 // const a = ["A", "B", "C", "D"];
 // a[2]="E";
 // console.log(a)
+
+
+//--------------------------------------------------------------------------------------------
+
+const http = require('http');
+const fs = require("fs");
+
+const server = http.createServer((req, res) => {
+
+      fs.readFile('file.txt',  (err, data) => { 
+        if (err) {
+            res.writeHead(500, { "content-type": 'text/plain' });
+            res.end("Error reading the file");
+        } else {
+            res.writeHead(200, { "content-type": 'text/plain' });
+            res.end(data);
+        }
+    });
+});
+
+const port = 3000;
+const HOST = '127.0.0.1'; // 127.0.0.1:3000
+
+server.listen(port, HOST, () => {
+    console.log(`Server is started on port #${port} and on localhost ${HOST}`);
+});
