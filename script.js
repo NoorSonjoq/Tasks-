@@ -120,26 +120,78 @@
 
 
 //--------------------------------------------------------------------------------------------
+// TAST 3
+// const http = require('http');
+// const fs = require("fs");
 
-const http = require('http');
-const fs = require("fs");
+// const server = http.createServer((req, res) => {
 
-const server = http.createServer((req, res) => {
+//       fs.readFile('file.txt',  (err, data) => { 
+//         if (err) {
+//             res.writeHead(500, { "content-type": 'text/plain' });
+//             res.end("Error reading the file");
+//         } else {
+//             res.writeHead(200, { "content-type": 'text/plain' });
+//             res.end(data);
+//         }
+//     });
+// });
 
-      fs.readFile('file.txt',  (err, data) => { 
-        if (err) {
-            res.writeHead(500, { "content-type": 'text/plain' });
-            res.end("Error reading the file");
-        } else {
-            res.writeHead(200, { "content-type": 'text/plain' });
-            res.end(data);
-        }
-    });
-});
+// const port = 3000;
+// const HOST = '127.0.0.1'; // 127.0.0.1:3000
 
-const port = 3000;
-const HOST = '127.0.0.1'; // 127.0.0.1:3000
+// server.listen(port, HOST, () => {
+//     console.log(`Server is started on port #${port} and on localhost ${HOST}`);
+// });
+// --------------------------------------------------------------------------------------------------------- 
+// Task 4 in Home project.postman_collection.json & library.postman_collection.json 
+// ---------------------------------------------------------------------------------------------------------
+//Task 5 
+// please do the logic to get a certain book by the id 
+// array 
+let books = []
+// add new book logic 
+app.post("/books", (req, res) => {
+    const { id, name, title } = req.body
+    // some بتستخدم اذا كان موجود الكتاب 
+    if (books.some((book) => book.id === id)) { 
+    // اذا كان موجود 
+    return res.status(400).json({ error: "this book already exist" })}
+    const newBook = new Book(id, name, title)
+    // التحقق 
+    const error = Book.validate(newBook)
+    // اذا كا في خطا
+    if (error) return res.status(400).json({ error })
+    // add book
+    books.push(newBook)
+    res.status(201).json({ message: "book has been added", book: newBook })
+})
+// برجع جميع books
+app.get("/books", (req, res) => {
+    // التحقق اذا كانت null 
+    if (books.length === 0) {
+     return res.status(404).json({ error: "No books available" });
+     }
+     // ارجاع الكتب اذا كانت موجوده 
+     res.status(200).json({message :"get all books ", book:books})
+})
 
-server.listen(port, HOST, () => {
-    console.log(`Server is started on port #${port} and on localhost ${HOST}`);
-});
+
+    // please complete the logic to update the lanaguge of translation 
+// translation language 
+app.patch("/books/:id/translation",(req,res)=>{
+    const bookID = parseInt(req.params.id,10)
+    const {language}= req.body
+    // التحقق من اللغه 
+    if(!language ||typeof language !=="string"){
+        return res.status(400).json({error: "sorry invalid or missing language"})
+    }
+    // find book بناء على id 
+    const book = books.find((b)=>b.id===bookID)
+    // التحقق من الكتاب 
+    if(!book) return res.status(404).json({error:"sorry the book number is not found "})
+        // تغيير لغه الكتاب الى اللغه الجديده باستخدام ChangeTranslation
+        book.ChangeTranslation(language);
+        res.status(200).json({ message: "Translation language has been successfully",book: book
+        }); 
+    })
