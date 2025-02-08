@@ -149,49 +149,212 @@
 //Task 5 
 // please do the logic to get a certain book by the id 
 // array 
-let books = []
-// add new book logic 
-app.post("/books", (req, res) => {
-    const { id, name, title } = req.body
-    // some بتستخدم اذا كان موجود الكتاب 
-    if (books.some((book) => book.id === id)) { 
-    // اذا كان موجود 
-    return res.status(400).json({ error: "this book already exist" })}
-    const newBook = new Book(id, name, title)
-    // التحقق 
-    const error = Book.validate(newBook)
-    // اذا كا في خطا
-    if (error) return res.status(400).json({ error })
-    // add book
-    books.push(newBook)
-    res.status(201).json({ message: "book has been added", book: newBook })
-})
-// برجع جميع books
-app.get("/books", (req, res) => {
-    // التحقق اذا كانت null 
-    if (books.length === 0) {
-     return res.status(404).json({ error: "No books available" });
-     }
-     // ارجاع الكتب اذا كانت موجوده 
-     res.status(200).json({message :"get all books ", book:books})
-})
+// let books = []
+// // add new book logic 
+// app.post("/books", (req, res) => {
+//     const { id, name, title } = req.body
+//     // some بتستخدم اذا كان موجود الكتاب 
+//     if (books.some((book) => book.id === id)) { 
+//     // اذا كان موجود 
+//     return res.status(400).json({ error: "this book already exist" })}
+//     const newBook = new Book(id, name, title)
+//     // التحقق 
+//     const error = Book.validate(newBook)
+//     // اذا كا في خطا
+//     if (error) return res.status(400).json({ error })
+//     // add book
+//     books.push(newBook)
+//     res.status(201).json({ message: "book has been added", book: newBook })
+// })
+// // برجع جميع books
+// app.get("/books", (req, res) => {
+//     // التحقق اذا كانت null 
+//     if (books.length === 0) {
+//      return res.status(404).json({ error: "No books available" });
+//      }
+//      // ارجاع الكتب اذا كانت موجوده 
+//      res.status(200).json({message :"get all books ", book:books})
+// })
 
 
-    // please complete the logic to update the lanaguge of translation 
-// translation language 
-app.patch("/books/:id/translation",(req,res)=>{
-    const bookID = parseInt(req.params.id,10)
-    const {language}= req.body
-    // التحقق من اللغه 
-    if(!language ||typeof language !=="string"){
-        return res.status(400).json({error: "sorry invalid or missing language"})
+// // please complete the logic to update the lanaguge of translation 
+// // translation language 
+// app.patch("/books/:id/translation",(req,res)=>{
+//     const bookID = parseInt(req.params.id,10)
+//     const {language}= req.body
+//     // التحقق من اللغه 
+//     if(!language ||typeof language !=="string"){
+//         return res.status(400).json({error: "sorry invalid or missing language"})
+//     }
+//     // find book بناء على id 
+//     const book = books.find((b)=>b.id===bookID)
+//     // التحقق من الكتاب 
+//     if(!book) return res.status(404).json({error:"sorry the book number is not found "})
+//         // تغيير لغه الكتاب الى اللغه الجديده باستخدام ChangeTranslation
+//         book.ChangeTranslation(language);
+//         res.status(200).json({ message: "Translation language has been successfully",book: book
+//         }); 
+//     })
+
+// -------------------------------------------------------------------------------------------------------------------------
+// Task 6  المطلوب 
+// // get book shop by id 
+// get cities 
+// get bookshop by name 
+// // get by email id 
+// // update name 
+// // update email 
+// // add 
+// // add only oneshop 
+// // delete one shop
+
+
+//Create server
+const express = require("express");
+const mysql = require("mysql2");
+const app = express();
+app.use(express.json());
+//createConnection
+const connection = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "noorsonjoq97@",
+    database: "library"
+});
+connection.connect((err) => {
+    if (err) {
+        console.log("Error connecting to MySQL:", err);
     }
-    // find book بناء على id 
-    const book = books.find((b)=>b.id===bookID)
-    // التحقق من الكتاب 
-    if(!book) return res.status(404).json({error:"sorry the book number is not found "})
-        // تغيير لغه الكتاب الى اللغه الجديده باستخدام ChangeTranslation
-        book.ChangeTranslation(language);
-        res.status(200).json({ message: "Translation language has been successfully",book: book
-        }); 
-    })
+});
+// add bookshop 
+app.post("/bookshop", (req, res) => {
+    const { city, name, contactNumber, email, address } = req.body;
+    const query = "INSERT INTO bookshop (city, name, contactNumber, email, address) VALUES (?, ?, ?, ?, ?)";
+    
+    connection.query(query, [city, name, contactNumber, email, address], (err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error adding new bookshop', details: err.message });
+        }
+        res.status(202).json({ message: "Bookshop has been added" });
+    });
+});
+// get all 
+app.get("/bookshop", (req, res) => {
+    const query = "SELECT * FROM bookshop";
+    
+    connection.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Error retrieving bookshops", details: err.message });
+        }
+        res.json(results); 
+    });
+});
+
+//get id
+app.get("/bookshop/:id", (req, res) => {
+    const query = "SELECT * FROM bookshop WHERE shop_id = ?";
+    
+    connection.query(query, [req.params.id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Error retrieving bookshop", details: err.message });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Bookshop not found" });
+        }
+        res.json(results); 
+    });
+});
+// get name 
+app.get("/bookshop/:name", (req, res) => {
+    const query = "SELECT * FROM bookshop WHERE name = ?";
+    
+    connection.query(query, [req.params.name], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Error retrieving bookshop by name", details: err.message });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Bookshop not found" });
+        }
+        res.json(results); 
+    });
+});
+//get cities 
+app.get("/bookshop/city/:city", (req, res) => {
+    const query = "SELECT * FROM bookshop WHERE city = ?";
+    
+    connection.query(query, [req.params.city], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Error retrieving bookshops by city", details: err.message });
+        }
+        res.json(results); 
+    });
+});
+// get email 
+app.get("/bookshop/email/:email", (req, res) => {
+    const query = "SELECT * FROM bookshop WHERE email = ?";
+    
+    connection.query(query, [req.params.email], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Error retrieving bookshop by email", details: err.message });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Bookshop email not found" });
+        }
+        res.json(results);  
+    });
+});
+
+// update name
+app.put("/bookshop/:name", (req, res) => {
+    const { name, email } = req.body;
+    const query = "UPDATE bookshop SET SET name = ?, email = ? WHERE shop_id = ?";
+    
+    connection.query(query, [name, email, req.params.id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Error updating bookshop", details: err.message });
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: "Book not found" });
+        }
+        res.status(200).json({ message: "Book has been updated" });
+    });
+});
+// delete 
+app.delete("/bookshop/:id", (req, res) => {
+    const query = "DELETE FROM bookshop WHERE  shop_id = ?";
+    
+    connection.query(query, [req.params.id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Error deleting bookshop", details: err.message });
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: "bookshop not found" });
+        }
+        res.status(200).json({ message: "bookshop has been deleted" });
+    });
+});
+
+// add only oneshop
+app.post("/bookshop/unique", (req, res) => {
+    const { name, city } = req.body;
+    const checkQuery = "SELECT * FROM bookshop WHERE name = ?";
+    connection.query(checkQuery, [name, city], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: "Error bookshop", details: err.message });
+        }
+        if (results.length > 0) {
+            return res.status(409).json({ message: "Bookshop already exists" });
+        }
+        const insertQuery = "insert bookshop (name) VALUES (?)";
+        connection.query(insertQuery, [name, city], (err) => {
+            if (err) {
+                return res.status(500).json({ error: "Error adding bookshop", details: err.message });
+            }
+            res.status(201).json({ message: "Bookshop has been added" });
+        });
+    });
+});
+const port = 3001;
+app.listen(port, () => {
+    console.log(`Server has been started on http://localhost:${port}`);
+});
